@@ -33,7 +33,7 @@ services:
     volumes: 
       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
     command:
-      --config etc/otel-collector-config.yml 
+      --config /etc/otel-collector-config.yml 
 
   tempo:
     image: grafana/tempo:latest 

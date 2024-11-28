@@ -3,24 +3,27 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
 
 exporters:
-  logging:
   otlp:
-    endpoint: tempo:4317 
+    endpoint: tempo:4317
     tls:
-      insecure: true 
+      insecure: true
+  debug:
+    verbosity: detailed
 
 service:
   pipelines:
-    traces: 
+    traces:
       receivers: [otlp]
       processors: []
-      exporters: [logging,otlp]
+      exporters: [otlp, debug]
 
     metrics:
       receivers: [otlp]
-      exporters: [debug] 
+      exporters: [debug]
     logs:
       receivers: [otlp]
       exporters: [debug]
