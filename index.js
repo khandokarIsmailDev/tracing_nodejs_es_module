@@ -44,7 +44,51 @@ app.get('/',(req,res) =>{
     res.json({message: 'Hello World'})
 })
 
-
-app.listen(port,() =>{
-    console.log(`Server is running on port ${port}`);
+app.get('/user',async (req,res) =>  {
+    const span = trace.getTracer('user-service').startSpan('getUser');
+    console.log('Span started');
+    try{
+        const users = await User.findAll();
+        res.json(users);
+        console.log('Users fetched:',users);
+    }catch(err){
+        span.recordException(err);
+        console.error('Error occurred:', err);
+        res.status(500).json({error: 'Internal Server Error'});
+    }finally{
+        span.end();
+        console.log('Span ended');
+    }
+    console.log('Span details:', span);
 })
+
+app.post('/user',async(req,res) =>{
+    const span = trace.getTracer('user-service').startSpan('createUser');
+    try{
+        const {name,email} = req.body;
+        span.setAttributes({name,email});
+        const newUser = await User.create({name,email});
+        res.status(201).json(newUser);
+    }catch(err){
+        span.recordException(err);
+        res.status(500).json({error: 'Internal Server Error'});
+    }finally{
+        span.end()
+    }
+    console.log('Span details:', span);
+})
+
+
+const startServer = async () =>{
+   console.log('Application is starting...');
+   try{
+    await sequelize.sync({force: true});
+    app.listen(port,() =>{
+        console.log(`Server is running on port ${port}`);
+    })
+   }catch(err){
+    console.error('Error starting server',err);
+   }
+}
+
+startServer();
